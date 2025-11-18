@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
 
 dotenv.config();
-
 const prisma = new PrismaClient();
 
 export const authMiddleware = async (req, res, next) => {
@@ -13,23 +12,32 @@ export const authMiddleware = async (req, res, next) => {
     return res.status(401).json({ error: "No token provided" });
   }
 
-  const token = authHeader.split(" ")[1]; // Bearer <token>
+  const token = authHeader.split(" ")[1];
 
   if (!token) {
     return res.status(401).json({ error: "Token missing" });
   }
 
   try {
+    const blacklisted = await prisma.BlacklistedToken.findUnique({
+      where: { token },
+    });
+
+    if (blacklisted) {
+      return res.status(401).json({ error: "Token is expired or logged out" });
+    }
+
+    // Decode user
     const userDecode = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await prisma.user.findUnique({ where: { id: userDecode.id } });
+    const user = await prisma.user.findUnique({
+      where: { id: userDecode.id },
+    });
 
     if (!user) {
-      res.status(401).json({ error: "NO user Found" });
+      return res.status(401).json({ error: "User not found" });
     }
-    console.log(user);
 
     req.user = user;
-
     next();
   } catch (err) {
     console.error(err);

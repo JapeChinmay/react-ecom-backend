@@ -1,5 +1,9 @@
 import { Prisma } from "@prisma/client";
-import { loginUser, registerUser } from "../services/auth.services.js";
+import {
+  loginUser,
+  registerUser,
+  logoutService,
+} from "../services/auth.services.js";
 export const register = async (req, res, next) => {
   console.log(req.body);
   try {
@@ -46,5 +50,22 @@ export const getProfile = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: "failed to fetch profile" });
+  }
+};
+
+export const logoutController = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    console.log(req.headers);
+    if (!authHeader) return res.status(400).json({ error: "Token missing" });
+
+    const token = authHeader.split(" ")[1];
+
+    await logoutService(token);
+
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.log("LOGOUT ERROR =", err);
+    return res.status(500).json({ error: "Logout failed" });
   }
 };

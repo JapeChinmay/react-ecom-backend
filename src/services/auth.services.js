@@ -44,3 +44,9 @@ export const loginUser = async ({ email, password }) => {
 
   return token;
 };
+
+export const logoutService = async (token) => {
+  return await prisma.BlacklistedToken.create({
+    data: { token },
+  });
+};
