@@ -1,6 +1,6 @@
 import app from "./app.js";
 
-const PORT = 5000;
+const PORT = 8080;
 
 app.use((req, res, next) => {
   console.log("🔥 Incoming Request:", req.method, req.url);
